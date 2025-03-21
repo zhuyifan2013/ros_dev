@@ -1,0 +1,10 @@
+# 客户端请求时发送的四个数字
+int8 rgb_m
+int8 rgb_s
+uint8 rgb_t
+uint8 rgb_r
+uint8 rgb_g
+uint8 rgb_b
+---
+# 服务器响应发送的数据
+string result
