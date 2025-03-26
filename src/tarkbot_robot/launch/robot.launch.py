@@ -36,7 +36,7 @@ def generate_launch_description():
     )
     robot_type_arg = DeclareLaunchArgument(
         'robot_type',
-        default_value='r20_mec'
+        default_value='r20_fwd'
     )
     pub_odom_tf_arg = DeclareLaunchArgument(
         'pub_odom_tf',
