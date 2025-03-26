@@ -87,7 +87,7 @@ int main(int argc, char **argv)
 		return 0;
 	}*/
 	
-	fflush(stdout);
+	// fflush(stdout);
 
 	//priv_nh.param("baud_rate", node_lidar.lidar_general_info.m_SerialBaudrate, 115200);
 	//priv_nh.param("frame_id", node_lidar.lidar_general_info.frame_id, std::string("base_link"));
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
 	node_lidar.lidar_general_info.version = 4;
 	//node_lidar.laser_pub = n.advertise<sensor_msgs::LaserScan>("scan", 1);
 	
-	parse_args(argc, argv);
+	// parse_args(argc, argv);
 
 	node_start(argc, argv);
 }                                                                                                           

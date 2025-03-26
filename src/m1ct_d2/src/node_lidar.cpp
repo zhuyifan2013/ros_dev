@@ -428,20 +428,26 @@ int send_lidar_data(LaserScan &outscan)
 /*设置串口信息的函数*/
 bool lidar_set_port()
 {
+	printf("11111");
 	if (node_lidar.lidar_status.isConnected)
 	{
+		printf("Connected");
 		return true;
 	}
 
+	printf("222");
 	std::cout << "***" << node_lidar.lidar_general_info.port << std::endl;
 	node_lidar.serial_port=make_shared<Serial_Port>(node_lidar.lidar_general_info.port,
 							node_lidar.lidar_general_info.m_SerialBaudrate,Timeout::simpleTimeout(DEFAULT_TIMEOUT));
 	if (!node_lidar.serial_port->open())
 	{
+		printf("Not open");
 		return false;
 	}
+	printf("3333");
 	node_lidar.lidar_status.isConnected=true;
 	sleep_ms(100);
+	printf("4444");
     node_lidar.serial_port->setDTR(0);
 	return true;
 }
@@ -538,10 +544,11 @@ int node_start(int argc, char **argv)
 
 	
 	rclcpp::init(argc, argv);
-	auto node = rclcpp::Node::make_shared("c1ct_d2");
+	auto node = rclcpp::Node::make_shared("m1ct_d2_node");
 	
 	node->declare_parameter("port", "");
   	node->get_parameter("port", node_lidar.lidar_general_info.port);
+	// node->get_parameter("port")
 	
 	node->declare_parameter("baudrate", 0);
   	node->get_parameter("baudrate", node_lidar.lidar_general_info.m_SerialBaudrate);

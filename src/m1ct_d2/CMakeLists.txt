@@ -36,11 +36,19 @@ ament_target_dependencies(m1ct_d2
   "geometry_msgs"
 )
 
-
-
 install(TARGETS
   m1ct_d2
   DESTINATION lib/${PROJECT_NAME})
+
+install(DIRECTORY
+  launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(DIRECTORY
+  params
+  DESTINATION share/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
