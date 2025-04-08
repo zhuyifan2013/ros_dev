@@ -1,0 +1,10 @@
+<robot name="pipi_bot">
+  <!-- base_link -->
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://pipibot_description/meshes/base.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+  </link>
+</robot>
