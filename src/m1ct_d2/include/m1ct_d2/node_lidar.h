@@ -15,6 +15,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include <iostream>
+#include <mutex>
 
 using namespace std;
 
@@ -121,7 +122,7 @@ struct node_lidar_t
   //Serial_Port *serial_port;
   std::shared_ptr<Serial_Port> serial_port;
   Event _dataEvent;
-  Locker _lock;
+  std::mutex  _lock;
 
   ~node_lidar_t();
 };
