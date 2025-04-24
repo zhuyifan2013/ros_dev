@@ -314,7 +314,6 @@ result_t grabScanData(uint32_t timeout)
 		// std::lock_guard<std::mutex> lock(node_lidar._lock);
 		if (node_lidar.scan_node_count == 0)
 		{
-			printf("RESULT_FAIL\n");
 			return RESULT_FAIL;
 		}
 	}
@@ -382,7 +381,7 @@ int send_lidar_data(LaserScan &outscan)
 			// scan_msg->header.stamp = ros::Time::now();
 			if (node_lidar.lidar_status.isConnected)
 			{
-				// printf("c\n");
+				printf("c\n");
 				// outscan.points.clear();
 				float range = 0;
 				float angle = 0.0;
@@ -448,7 +447,9 @@ int send_lidar_data(LaserScan &outscan)
 				{
 					node_lidar.optimize_lidar.PointCloudFilter(&outscan);
 				}
+				return 0;
 			}
+			return -1;
 		}
 	}
 	catch (const std::exception &e)
@@ -461,6 +462,7 @@ int send_lidar_data(LaserScan &outscan)
 		std::cerr << "Unknown exception in send_lidar_data" << std::endl;
 		return -1;
 	}
+	return -1;
 }
 
 /*设置串口信息的函数*/
