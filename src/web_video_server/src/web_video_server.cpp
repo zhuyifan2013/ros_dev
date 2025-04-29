@@ -62,7 +62,7 @@ WebVideoServer::WebVideoServer(const rclcpp::NodeOptions & options)
   declare_parameter("address", "0.0.0.0");
   declare_parameter("server_threads", 1);
   declare_parameter("publish_rate", -1.0);
-  declare_parameter("default_stream_type", "mjpeg");
+  declare_parameter("default_stream_type", "vp8");
 
   get_parameter("port", port_);
   get_parameter("verbose", verbose_);
