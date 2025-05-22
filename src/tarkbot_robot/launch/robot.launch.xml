@@ -1,7 +1,7 @@
 <launch>
 
     <!-- 标签 -->
-    <arg name="base_frame"     default="base_footprint"/>  
+    <arg name="base_frame"     default="base_link"/>  
     <arg name="odom_frame"     default="odom"/>  
     <arg name="imu_frame"      default="imu_link"/>  
     <arg name="odom_topic"     default="odom"/>  

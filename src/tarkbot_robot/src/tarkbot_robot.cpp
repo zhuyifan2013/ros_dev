@@ -47,7 +47,7 @@
  {
      // ROS2参数处理方式
      this->declare_parameter("odom_frame", "odom");
-     this->declare_parameter("base_frame", "base_footprint");
+     this->declare_parameter("base_frame", "base_link");
      this->declare_parameter("imu_frame", "imu_link");
      
      this->declare_parameter("odom_topic", "odom");
@@ -98,6 +98,7 @@
 
         // Initialize the transform broadcaster
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+    tf_static_broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(this);
  
      // 数据初始化
      memset(&pos_data_, 0, sizeof(pos_data_));
@@ -176,9 +177,12 @@
      RCLCPP_INFO(this->get_logger(), "Tarkbot Robot setup publisher on imu [sensor_msgs/msg/Imu]");
      RCLCPP_INFO(this->get_logger(), "Tarkbot Robot setup publisher on bat_vol [float]");
      RCLCPP_INFO(this->get_logger(), "Tarkbot Robot setup subscriber on cmd_vel [geometry_msgs/msg/Twist]");
- 
+    
      // 机器人启动完成提示信息
      RCLCPP_INFO(this->get_logger(), "Tarkbot Robot initialization completed, is Running!");
+
+         // 发送 static TF
+     publishLaserTF();
      
      change_enable = false;
  }
@@ -379,7 +383,7 @@
          publishImu();      // 发布IMU传感器话题
          publishBatVol();   // 发布电池电压话题
  
-         // 发布odom里程计TF坐标变换（odom --> base_footprint）
+         // 发布odom里程计TF坐标变换（odom --> base_link
          publishOdomTF();
      }
  }
@@ -495,8 +499,7 @@
  
      // 发布
      odom_pub_->publish(std::move(odom_msgs));
- }
- 
+ } 
  /*
   * @功  能  发布电池电压话题消息
   */
@@ -540,9 +543,43 @@
          transform_stamped.transform.rotation.y = q.y();
          transform_stamped.transform.rotation.z = q.z();
          transform_stamped.transform.rotation.w = q.w();
- 
+
          // 发布TF坐标变换
          tf_broadcaster_->sendTransform(transform_stamped);
+     }
+ }
+
+ void TarkbotRobot::publishLaserTF()
+ {
+     // 发布 base_link 到 laser 坐标变换
+     static bool published = false; // 只发布一次
+     if (!published)
+     {
+        RCLCPP_INFO(this->get_logger(), "1111");
+         geometry_msgs::msg::TransformStamped laser_transform;
+ 
+         // 填充时间戳和坐标系名字
+         laser_transform.header.stamp = rclcpp::Time(0);
+         laser_transform.header.frame_id = base_frame_;  // 通常是 "base_link"
+         laser_transform.child_frame_id = "laser_link";  // 你自己定义的，比如 "laser"
+ 
+         // 设定雷达在小车上的相对位置
+         laser_transform.transform.translation.x = 0.1;   // 假设雷达前移 0.1 米
+         laser_transform.transform.translation.y = 0.1;   // 不正中安装
+         laser_transform.transform.translation.z = 0.12;   // 离地 0.12 米高
+ 
+         // 雷达通常无旋转，或者绕 Z 轴转 90 度（看你的雷达安装方向）
+         tf2::Quaternion q;
+         q.setRPY(0, 0, 0);  // 无旋转
+         laser_transform.transform.rotation.x = q.x();
+         laser_transform.transform.rotation.y = q.y();
+         laser_transform.transform.rotation.z = q.z();
+         laser_transform.transform.rotation.w = q.w();
+ 
+         // 发布静态TF
+         tf_static_broadcaster_->sendTransform(laser_transform);
+         RCLCPP_INFO(this->get_logger(), "Publishing static laser TF");
+         published = true;
      }
  }
  
