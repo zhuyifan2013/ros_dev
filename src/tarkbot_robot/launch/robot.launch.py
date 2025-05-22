@@ -8,7 +8,7 @@ def generate_launch_description():
     # 声明启动参数
     base_frame_arg = DeclareLaunchArgument(
         'base_frame',
-        default_value='base_footprint'
+        default_value='base_link'
     )
     odom_frame_arg = DeclareLaunchArgument(
         'odom_frame',

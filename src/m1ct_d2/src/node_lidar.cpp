@@ -266,7 +266,7 @@ int read_forever()
 							std::lock_guard<std::mutex> lock(node_lidar._lock);
 							if ((node_lidar.lidar_time.scan_time_current - node_lidar.lidar_time.scan_time_record) > 2000)
 							{
-								printf("full----- count=%d,time=%lld\n", scan_count, current_times());
+								// printf("full----- count=%d,time=%lld\n", scan_count, current_times());
 								node_lidar.lidar_time.scan_time_record = node_lidar.lidar_time.scan_time_current;
 							}
 							node_lidar.lidar_time.scan_start_time = node_lidar.lidar_time.tim_scan_start;
@@ -328,11 +328,9 @@ result_t grabScanData(uint32_t timeout)
 bool data_handling(LaserScan &outscan)
 {
 
-	printf("start to handle\n");
 	// node_lidar.lidar_time.tim_scan_start = getTime();
 	if (grabScanData(2000) == RESULT_OK)
 	{
-		printf("grabScanData\n");
 		send_lidar_data(outscan);
 		return true;
 	}
@@ -348,9 +346,6 @@ int send_lidar_data(LaserScan &outscan)
 	std::lock_guard<std::mutex> lock(node_lidar._lock);
 	try
 	{
-		// 使用 std::lock_guard 自动管理锁的生命周期
-		printf("send_lidar_data\n");
-
 		// 检查指针是否为空
 		if (!node_lidar.scan_node_buf || !node_lidar.serial_port)
 		{
@@ -359,16 +354,14 @@ int send_lidar_data(LaserScan &outscan)
 		}
 
 		size_t count = node_lidar.scan_node_count;
-		std::cout << "Count value: " << count << std::endl;
+		// std::cout << "Count value: " << count << std::endl;
 		if (count < MAX_SCAN_NODES && count > 0)
 		{
-			printf("a\n");
 			// node_lidar.lidar_time.tim_scan_end = getTime();
 			uint64_t scan_time = (node_lidar.lidar_time.scan_end_time - node_lidar.lidar_time.scan_start_time);
-			printf("b\n");
 			// node_lidar.lidar_time.tim_scan_start = node_lidar.lidar_time.tim_scan_end -  scan_time ;
 			node_lidar.lidar_block.lidar_zero_count = 0;
-			outscan.config.angle_increment = (2.0 * M_PI / count);
+			outscan.config.angle_increment = (2.0 * M_PI / (count -1));
 			outscan.config.min_angle = 0;
 			outscan.config.max_angle = 2 * M_PI;
 			outscan.config.min_range = 0.10;
@@ -376,12 +369,11 @@ int send_lidar_data(LaserScan &outscan)
 			outscan.config.scan_time = static_cast<float>(scan_time * 1.0 / 1e9);
 			outscan.config.time_increment = outscan.config.scan_time / (double)(count - 1);
 			outscan.stamp = node_lidar.lidar_time.scan_start_time;
-			std::cout << "scantime:" << outscan.config.scan_time << "stamp:" << outscan.stamp << std::endl;
+			// std::cout << "scantime:" << outscan.config.scan_time << "stamp:" << outscan.stamp << std::endl;
 			// scan_msg->header.frame_id = node_lidar.lidar_general_info.frame_id;
 			// scan_msg->header.stamp = ros::Time::now();
 			if (node_lidar.lidar_status.isConnected)
 			{
-				printf("c\n");
 				// outscan.points.clear();
 				float range = 0;
 				float angle = 0.0;
@@ -434,9 +426,7 @@ int send_lidar_data(LaserScan &outscan)
 					{
 						node_lidar.lidar_block.lidar_zero_count++;
 					}
-					// printf("e\n");
 					outscan.points.push_back(point);
-					// printf("f\n");
 				}
 
 				/*雷达被遮挡判断*/
@@ -672,12 +662,17 @@ int node_start(int argc, char **argv)
 			{
 				auto scan_msg = std::make_shared<sensor_msgs::msg::LaserScan>();
 
-				scan_msg->ranges.resize(scan.points.size());
-				scan_msg->intensities.resize(scan.points.size());
+				// scan_msg->ranges.resize(scan.points.size());
+				// scan_msg->intensities.resize(scan.points.size());
 
-				scan_msg->header.stamp.sec = RCL_NS_TO_S(scan.stamp);
-				;
-				scan_msg->header.stamp.nanosec = scan.stamp - RCL_S_TO_NS(scan_msg->header.stamp.sec);
+				int expected_count = 402;
+				scan_msg->ranges.resize(expected_count);
+				scan_msg->intensities.resize(expected_count);
+
+				scan_msg->header.stamp = node->now();
+				// scan_msg->header.stamp.sec = RCL_NS_TO_S(scan.stamp);
+				// ;
+				// scan_msg->header.stamp.nanosec = scan.stamp - RCL_S_TO_NS(scan_msg->header.stamp.sec);
 				scan_msg->header.frame_id = node_lidar.lidar_general_info.frame_id;
 
 				scan_msg->angle_min = scan.config.min_angle;
@@ -687,13 +682,14 @@ int node_start(int argc, char **argv)
 				scan_msg->time_increment = scan.config.time_increment;
 				scan_msg->range_min = scan.config.min_range;
 				scan_msg->range_max = scan.config.max_range;
-				for (int i = 0; i < scan.points.size(); i++)
+				for (int i = 0; i < expected_count; i++)
 				{
 					scan_msg->ranges[i] = scan.points[i].range;
 					scan_msg->intensities[i] = scan.points[i].intensity;
 				}
-				// printf("publish--------\n");
+				// printf("publish--- %ld.%09ld\n",scan_msg->header.stamp.sec,scan_msg->header.stamp.nanosec);
 				laser_pub->publish(*scan_msg);
+				// sleep(0.1);
 			}
 		}
 		catch (const std::exception &e)
